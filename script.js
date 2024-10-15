@@ -2,6 +2,8 @@ const apiKey = '540ba1d11ea065ab6ecf6073e792d2c9';
 const temperatureDiv = document.getElementById('temperature');
 const searchButton = document.getElementById('searchButton');
 const cityInput = document.getElementById('cityInput');
+const cityDefault = 'madrid';
+
 const unitSelect = document.getElementById('unitSelect'); // Selección de unidad
 
 async function getCoordinates(city) {
@@ -54,6 +56,9 @@ unitSelect.addEventListener('change', () => {
     if (city) {
         getTemperature(city); // Actualiza la temperatura con la ciudad actual
     }
+    else{
+        getTemperature(cityDefault);
+    }
 });
 
 // Evento de búsqueda
@@ -65,4 +70,4 @@ searchButton.addEventListener('click', () => {
 });
 
 // Cargar la temperatura inicial de Helsinki
-getTemperature('Helsinki');
+getTemperature(cityDefault);
