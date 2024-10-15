@@ -1,0 +1,3 @@
+emepece haciendo un fetch sencillo y viendo la temperatura de Helsinki
+luego añadi la opciom de buscar una ciudad
+luego añadi un despleable para cambiar el modo de ver la temperatura

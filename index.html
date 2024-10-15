@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tiempo en Helsinki</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>TEMPERATURE:</h1>
+        <select id="unitSelect">
+            <option value="metric">Celsius (°C)</option>
+            <option value="imperial">Fahrenheit (°F)</option>
+            <option value="standard">Kelvin (K)</option>
+        </select>
+        <input type="text" id="cityInput" placeholder="Ingresa el nombre de la ciudad">
+        <button id="searchButton">Buscar</button>
+        <div id="temperature" class="temperature">Loading...</div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
