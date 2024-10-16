@@ -1,73 +1,107 @@
 const apiKey = '540ba1d11ea065ab6ecf6073e792d2c9';
 const temperatureDiv = document.getElementById('temperature');
 const searchButton = document.getElementById('searchButton');
+const unitSelect = document.getElementById('unitSelect');
 const cityInput = document.getElementById('cityInput');
-const cityDefault = 'madrid';
+const locationButton = document.getElementById('locationButton'); 
+const citySearch = document.getElementById('citySearch'); 
+let cityName= document.getElementById('cityName'); 
 
-const unitSelect = document.getElementById('unitSelect'); // Selección de unidad
 
+let city= 'vallecas';
+//here I am using a default city to be seen when you first open the app. I choose my home City :)
+
+console.log(city);
+
+let unitSymbol = changeUnitSymbol(unitSelect.value);
+
+//first i want to know the temperature
+async function getTemperature(city) { 
+    const { lat, lon } = await getCoordinates(city);
+    getTemperatureByCoordinates(lat,lon);
+}
+
+async function getTemperatureByCoordinates(lat,lon) { 
+    const weatherUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=${unitSelect.value}`;
+    const response = await fetch(weatherUrl);
+    if (!response.ok) throw new Error('Error with the temperature');
+    const data = await response.json();
+    const temperature = data.main.temp;
+    cityUpdate(data.name);
+
+    temperatureDiv.innerText = `${temperature} ${unitSymbol}`;
+}
+
+//this function gives me the latitude and longitude of the city i am looking for 
 async function getCoordinates(city) {
     const geocodingUrl = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}`;
-
-    try {
-        const response = await fetch(geocodingUrl);
-        if (!response.ok) throw new Error('Ciudad no encontrada');
-        const data = await response.json();
-        return { lat: data.coord.lat, lon: data.coord.lon };
-    } catch (error) {
-        console.error('Error al obtener las coordenadas:', error);
-        temperatureDiv.innerText = 'Error al cargar la ciudad';
-        throw error;
-    }
+    const response = await fetch(geocodingUrl);
+    if (!response.ok) throw new Error('City not found');
+    const data = await response.json();
+    return { lat: data.coord.lat, lon: data.coord.lon };
 }
 
-async function getTemperature(city) {
-    const unit = unitSelect.value; // Obtener la unidad seleccionada
-    try {
-        const { lat, lon } = await getCoordinates(city);
-        const weatherUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=${unit}`;
-        const response = await fetch(weatherUrl);
-        
-        if (!response.ok) throw new Error('Error al obtener el clima');
-        
-        const data = await response.json();
-        const temperature = data.main.temp;
-        let unitSymbol;
 
-        // Determinar el símbolo de la unidad
-        if (unit === 'metric') {
-            unitSymbol = '°C';
-        } else if (unit === 'imperial') {
-            unitSymbol = '°F';
+// with this function i obtain the current location of the user
+function getLocation() {
+    return new Promise((resolve, reject) => {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                position => {
+                    const lat = position.coords.latitude;
+                    const lon = position.coords.longitude;
+                    resolve({ lat, lon });
+                },
+                error => {
+                    console.error('Error obtaining location:', error);
+                    reject(error);
+                }
+            );
         } else {
-            unitSymbol = 'K';
+            reject(new Error('Geolocation is not supported by the browser'));
         }
-
-        temperatureDiv.innerText = `${temperature} ${unitSymbol}`;
-    } catch (error) {
-        console.error('Error al obtener la temperatura:', error);
-        temperatureDiv.innerText = 'Error al cargar la temperatura';
-    }
+    });
 }
 
-// Añadir un evento para actualizar la temperatura cuando se cambia la unidad
+//Change the unit when selected
 unitSelect.addEventListener('change', () => {
-    const city = cityInput.value.trim();
-    if (city) {
-        getTemperature(city); // Actualiza la temperatura con la ciudad actual
-    }
-    else{
-        getTemperature(cityDefault);
+    unitSymbol=changeUnitSymbol(unitSelect.value);
+    getTemperature(city);
+});
+
+//Selects the symbol
+function changeUnitSymbol(unit) {
+    let symbols = {
+        metric: '°C',
+        imperial: '°F',
+        standard: 'K'
+    };
+    return symbols[unit];
+}
+
+// User selects a city
+citySearch.addEventListener('submit', (event) => {
+    event.preventDefault();
+    if (cityInput) {
+        city=cityInput.value;
+        console.log(city);
+        getTemperature(city); 
     }
 });
 
-// Evento de búsqueda
-searchButton.addEventListener('click', () => {
-    const city = cityInput.value.trim();
-    if (city) {
-        getTemperature(city);
-    }
+//user selects to see the temperature in their current position
+locationButton.addEventListener('click', () => {
+    getLocation().then(({ lat, lon }) => {
+        getTemperatureByCoordinates(lat, lon);
+    }).catch(error => {
+        console.log("Can't found current position")
+    });
 });
 
-// Cargar la temperatura inicial de Helsinki
-getTemperature(cityDefault);
+function cityUpdate(newCity) {
+    city=newCity;
+    cityName.innerText = city; 
+}
+
+getTemperature(city);
+

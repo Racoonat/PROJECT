@@ -3,21 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tiempo en Helsinki</title>
+    <title>Wheather app</title>
     <link rel="stylesheet" href="styles.css">
+    <script src="https://unpkg.com/frappe-charts@1.6.1/dist/frappe-charts.min.umd.js"></script>
+    
 </head>
 <body>
-    <div class="container">
-        <h1>TEMPERATURE:</h1>
+
+    <header class="top-bar">
+        <h1>Weather App by Natalia 🦝</h1>
         <select id="unitSelect">
             <option value="metric">Celsius (°C)</option>
             <option value="imperial">Fahrenheit (°F)</option>
             <option value="standard">Kelvin (K)</option>
         </select>
-        <input type="text" id="cityInput" placeholder="Ingresa el nombre de la ciudad">
-        <button id="searchButton">Buscar</button>
-        <div id="temperature" class="temperature">Loading...</div>
+    </header>
+
+    <div class="search-bar">
+        <form id="citySearch">
+            <input type="text" id="cityInput" placeholder="Introduce a city name">
+            <button type="submit" id="searchButton">Search</button>
+        </form>
+        <button id="locationButton">Use my location</button>
     </div>
+
+    <div class="weather-info">
+        <div id="cityName">City not found</div>
+        <div id="temperature" class="temperature">--</div>
+    </div>
+
+    <div id="chart"></div>
+
     <script src="script.js"></script>
 </body>
 </html>
