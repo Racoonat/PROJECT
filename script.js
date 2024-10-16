@@ -27,6 +27,7 @@ async function getTemperatureByCoordinates(lat,lon) {
     const temperature = data.main.temp;
     cityUpdate(data.name);
     getHourlyForecast(lat,lon);
+    updateAppStyle(temperature, data.sys.sunrise, data.sys.sunset);
 
     temperatureDiv.innerText = `${temperature} ${unitSymbol}`;
 }
@@ -142,6 +143,44 @@ function renderHourlyChart(hours, temperatures) {
         colors: ['#eb5146'],
         height: 200
     });
+}
+
+function updateAppStyle(temperature, sunrise, sunset) {
+    const currentHour = new Date().getHours();
+    const isDaytime = currentHour >= new Date(sunrise * 1000).getHours() && currentHour < new Date(sunset * 1000).getHours();
+
+    // Determinar qué CSS cargar
+    let stylesheet = '';
+
+    if (isDaytime) {
+        if (temperature > 30) {
+            stylesheet = 'styles_hot.css';
+        } else if (temperature > 10) {
+            stylesheet = 'styles_day.css';
+        } else {
+            stylesheet = 'styles_cold.css';
+        }
+    } else {
+        stylesheet = 'styles_cold.css';
+    }
+
+    // Cargar el CSS correspondiente
+    loadStylesheet(stylesheet);
+}
+
+function loadStylesheet(filename) {
+    // Remover la hoja de estilos actual
+    const oldLink = document.getElementById('dynamic-stylesheet');
+    if (oldLink) {
+        oldLink.parentNode.removeChild(oldLink);
+    }
+
+    // Crear un nuevo elemento <link>
+    const link = document.createElement('link');
+    link.id = 'dynamic-stylesheet';
+    link.rel = 'stylesheet';
+    link.href = filename;
+    document.head.appendChild(link);
 }
 
 getTemperature(city);

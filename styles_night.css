@@ -1,0 +1,110 @@
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #586b7e;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100vh;
+    justify-content: flex-start;
+    padding-top: 60px;
+}
+
+.top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #007bff;
+    color: white;
+    padding: 10px 20px;
+    width: 100%;
+    box-sizing: border-box;
+    position: fixed;
+    top: 0;
+    left: 0;
+}
+
+.top-bar h1 {
+    margin: 0;
+    font-size: 1.5em;
+}
+
+.top-bar select {
+    font-size: 1em;
+    padding: 5px 10px;
+    border-radius: 5px;
+    border: none;
+}
+
+.search-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #586b7e;
+    padding: 10px 20px;
+    width: 100%;
+    box-sizing: border-box;
+    margin-top: 20px;
+    border-bottom: 1px solid #ccc;
+}
+
+.search-bar form {
+    display: flex;
+    width: 70%;
+}
+
+.search-bar input[type="text"] {
+    padding: 10px;
+    font-size: 1em;
+    width: 100%;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box;
+}
+
+.search-bar button {
+    background-color: #007bff;
+    color: white;
+    padding: 10px 20px;
+    font-size: 1em;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-left: 10px;
+    transition: background-color 0.3s;
+}
+
+.search-bar button:hover {
+    background-color: #0056b3;
+}
+
+#locationButton {
+    background-color: #28a745;
+}
+
+#locationButton:hover {
+    background-color: #218838;
+}
+
+.weather-info {
+    text-align: center;
+    margin-top: 40px;
+    color: #333;
+}
+
+.weather-info #cityName {
+    font-size: 1.5em;
+    margin-bottom: 10px;
+}
+
+.temperature {
+    font-size: 3em;
+    font-weight: bold;
+    margin-top: 10px;
+}
+
+#charthours {
+    width: 90%;  /* Ajusta el ancho */
+    height: 450px;  /* Altura para el gráfico */
+    margin-top: 20px;  /* Espacio entre otros elementos */
+}
