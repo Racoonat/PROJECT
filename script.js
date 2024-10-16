@@ -11,8 +11,6 @@ let cityName= document.getElementById('cityName');
 let city= 'vallecas';
 //here I am using a default city to be seen when you first open the app. I choose my home City :)
 
-console.log(city);
-
 let unitSymbol = changeUnitSymbol(unitSelect.value);
 
 //first i want to know the temperature
@@ -28,6 +26,7 @@ async function getTemperatureByCoordinates(lat,lon) {
     const data = await response.json();
     const temperature = data.main.temp;
     cityUpdate(data.name);
+    getHourlyForecast(lat,lon);
 
     temperatureDiv.innerText = `${temperature} ${unitSymbol}`;
 }
@@ -101,6 +100,48 @@ locationButton.addEventListener('click', () => {
 function cityUpdate(newCity) {
     city=newCity;
     cityName.innerText = city; 
+}
+
+async function getHourlyForecast(lat, lon) {
+    const hourlyWeatherUrl = `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${apiKey}&units=${unitSelect.value}`;
+    const response = await fetch(hourlyWeatherUrl);
+    if (!response.ok) throw new Error('Error with hourly forecast');
+    const data = await response.json();
+    const hours = [];
+    const temperatures = [];
+    
+
+    data.list.slice(0, 24).forEach(entry => {
+        const date = new Date(entry.dt * 1000); 
+        hours.push(date.getHours() + ':00'); 
+        temperatures.push(entry.main.temp); 
+    });
+    
+    renderHourlyChart(hours, temperatures);
+}
+
+
+function renderHourlyChart(hours, temperatures) {
+
+    let chartData={
+        labels: hours,
+        datasets: [
+            {
+                name: "Temperature",
+                type:'line',
+                values: temperatures
+            }
+        ]
+    };
+
+
+    let chart = new frappe.Chart('#charthours', {
+        title: "Next 24h",
+        data: chartData,
+        type: 'line', 
+        colors: ['#eb5146'],
+        height: 200
+    });
 }
 
 getTemperature(city);
