@@ -108,3 +108,28 @@ body {
     height: 450px;  /* Altura para el gráfico */
     margin-top: 20px;  /* Espacio entre otros elementos */
 }
+
+/* Contenedor principal para organizar la temperatura y el gráfico */
+.weather-display {
+    display: flex;
+    width: 100%; /* Ocupa todo el ancho disponible */
+    justify-content: space-between; /* Coloca los elementos a los extremos */
+}
+
+/* Estilos para la información de la temperatura */
+.temperature-info {
+    width: 50%; /* Ocupa la mitad izquierda de la pantalla */
+    text-align: center; /* Alineación central de la información de la temperatura */
+    padding: 20px;
+}
+
+/* Estilos para el gráfico de 7 días */
+#chartdays {
+    width: 50%; /* Ocupa la mitad derecha de la pantalla */
+    height: 200px; /* Altura del gráfico */
+    padding: 20px; /* Añade espacio alrededor del gráfico */
+    background-color: #f9f9f9; /* Color de fondo */
+    border: 1px solid #ccc; /* Borde del gráfico */
+    border-radius: 8px; /* Bordes redondeados */
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* Sombra para el gráfico */
+}

@@ -5,7 +5,9 @@ const unitSelect = document.getElementById('unitSelect');
 const cityInput = document.getElementById('cityInput');
 const locationButton = document.getElementById('locationButton'); 
 const citySearch = document.getElementById('citySearch'); 
+const weather=document.getElementById('weather');
 let cityName= document.getElementById('cityName'); 
+
 
 
 let city= 'vallecas';
@@ -13,7 +15,8 @@ let city= 'vallecas';
 
 let unitSymbol = changeUnitSymbol(unitSelect.value);
 
-//first i want to know the temperature
+//--------------------------GET TEMPERATURE---------------------------------------------------------------
+
 async function getTemperature(city) { 
     const { lat, lon } = await getCoordinates(city);
     getTemperatureByCoordinates(lat,lon);
@@ -25,14 +28,17 @@ async function getTemperatureByCoordinates(lat,lon) {
     if (!response.ok) throw new Error('Error with the temperature');
     const data = await response.json();
     const temperature = data.main.temp;
+    const weatherDescription = data.weather[0].description;
     cityUpdate(data.name);
     getHourlyForecast(lat,lon);
+    getDailyForecast(lat,lon);
     updateAppStyle(temperature, data.sys.sunrise, data.sys.sunset);
 
     temperatureDiv.innerText = `${temperature} ${unitSymbol}`;
+    weather.innerText = `${weatherDescription.charAt(0).toUpperCase() + weatherDescription.slice(1)}`;
 }
 
-//this function gives me the latitude and longitude of the city i am looking for 
+//--------------------------GET LAN AND LON GIVEN A CITY NAME---------------------------------------------------------------
 async function getCoordinates(city) {
     const geocodingUrl = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}`;
     const response = await fetch(geocodingUrl);
@@ -42,7 +48,8 @@ async function getCoordinates(city) {
 }
 
 
-// with this function i obtain the current location of the user
+//--------------------------CHANGE LOCATION TO CURRENT LOCATION---------------------------------------------------------------
+
 function getLocation() {
     return new Promise((resolve, reject) => {
         if (navigator.geolocation) {
@@ -63,13 +70,14 @@ function getLocation() {
     });
 }
 
-//Change the unit when selected
+//--------------------------EVENT LISTENERS---------------------------------------------------------------
+
 unitSelect.addEventListener('change', () => {
     unitSymbol=changeUnitSymbol(unitSelect.value);
     getTemperature(city);
 });
 
-//Selects the symbol
+
 function changeUnitSymbol(unit) {
     let symbols = {
         metric: '°C',
@@ -79,7 +87,7 @@ function changeUnitSymbol(unit) {
     return symbols[unit];
 }
 
-// User selects a city
+
 citySearch.addEventListener('submit', (event) => {
     event.preventDefault();
     if (cityInput) {
@@ -89,7 +97,7 @@ citySearch.addEventListener('submit', (event) => {
     }
 });
 
-//user selects to see the temperature in their current position
+
 locationButton.addEventListener('click', () => {
     getLocation().then(({ lat, lon }) => {
         getTemperatureByCoordinates(lat, lon);
@@ -98,10 +106,14 @@ locationButton.addEventListener('click', () => {
     });
 });
 
+//--------------------------UPDATE THE CITY---------------------------------------------------------------
+
 function cityUpdate(newCity) {
     city=newCity;
     cityName.innerText = city; 
 }
+
+//--------------------------GET 24 HOUR FORECAST---------------------------------------------------------------
 
 async function getHourlyForecast(lat, lon) {
     const hourlyWeatherUrl = `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${apiKey}&units=${unitSelect.value}`;
@@ -120,6 +132,7 @@ async function getHourlyForecast(lat, lon) {
     
     renderHourlyChart(hours, temperatures);
 }
+
 
 
 function renderHourlyChart(hours, temperatures) {
@@ -145,18 +158,76 @@ function renderHourlyChart(hours, temperatures) {
     });
 }
 
+async function getDailyForecast(lat, lon) {
+    const dailyWeatherUrl = `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${apiKey}&units=${unitSelect.value}`;
+    const response = await fetch(dailyWeatherUrl);
+    if (!response.ok) throw new Error('Error with daily forecast');
+    const data = await response.json();
+    const dailyTemperatures = {}; 
+
+    data.list.forEach(entry => {
+        const date = new Date(entry.dt * 1000);
+        const day = date.getDay(); 
+        if (!dailyTemperatures[day]) {
+            dailyTemperatures[day] = [];
+        }
+        dailyTemperatures[day].push(entry.main.temp);
+    });
+
+    const days = [];
+    const temperatures = [];
+
+    Object.keys(dailyTemperatures).slice(0, 7).forEach(day => {
+        const avgTemp = dailyTemperatures[day].reduce((sum, temp) => sum + temp, 0) / dailyTemperatures[day].length;
+        days.push(getDayName(parseInt(day))); 
+        temperatures.push(avgTemp.toFixed(2)); 
+    });
+
+    renderDailyChart(days, temperatures);
+}
+
+
+function getDayName(dayNumber) {
+    const daysOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+    return daysOfWeek[dayNumber];
+}
+
+function renderDailyChart(days, temperatures) {
+
+    let chartData = {
+        labels: days,
+        datasets: [
+            {
+                name: "Temperature",
+                type: 'line',
+                values: temperatures
+            }
+        ]
+    };
+
+    let chart = new frappe.Chart('#chartdays', {
+        title: "Next 7 Days",
+        data: chartData,
+        type: 'line', 
+        colors: ['#eb5146'],
+        height: 200
+    });
+}
+
+
+
+//--------------------------CHANGE STYLESHEET---------------------------------------------------------------
+
 function updateAppStyle(temperature, sunrise, sunset) {
     const currentHour = new Date().getHours();
     const isDaytime = currentHour >= new Date(sunrise * 1000).getHours() && currentHour < new Date(sunset * 1000).getHours();
-
-    // Determinar qué CSS cargar
     let stylesheet = '';
 
     if (isDaytime) {
         if (temperature > 30) {
-            stylesheet = 'styles_hot.css';
+            stylesheet = 'styles_cold.css';
         } else if (temperature > 10) {
-            stylesheet = 'styles_day.css';
+            stylesheet = 'styles_cold.css';
         } else {
             stylesheet = 'styles_cold.css';
         }
@@ -164,24 +235,23 @@ function updateAppStyle(temperature, sunrise, sunset) {
         stylesheet = 'styles_cold.css';
     }
 
-    // Cargar el CSS correspondiente
     loadStylesheet(stylesheet);
 }
 
 function loadStylesheet(filename) {
-    // Remover la hoja de estilos actual
     const oldLink = document.getElementById('dynamic-stylesheet');
     if (oldLink) {
         oldLink.parentNode.removeChild(oldLink);
     }
 
-    // Crear un nuevo elemento <link>
     const link = document.createElement('link');
     link.id = 'dynamic-stylesheet';
     link.rel = 'stylesheet';
     link.href = filename;
     document.head.appendChild(link);
 }
+
+//-----------------------------------------------------------------------------------------
 
 getTemperature(city);
 

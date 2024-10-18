@@ -12,7 +12,7 @@
 <body>
 
     <header class="top-bar">
-        <h1>Weather App by Natalia 🦝</h1>
+        <h1>Weather App by Nata 🦝</h1>
         <select id="unitSelect">
             <option value="metric">Celsius (°C)</option>
             <option value="imperial">Fahrenheit (°F)</option>
@@ -28,14 +28,18 @@
         <button id="locationButton">Use my location</button>
     </div>
 
-    <div class="weather-info">
-        <div id="cityName">City not found</div>
-        <div id="temperature" class="temperature">--</div>
+    <div id="cityName">City not found</div>
+
+    <div class="weather-display">
+        <div class="temperature-info">
+            <div id="temperature">--</div>
+            <div id="weather"></div>
+        </div>
+        <div id="chartdays"></div>
     </div>
 
     <div id="charthours"></div>
 
-    
 
     <script src="script.js"></script>
 </body>
