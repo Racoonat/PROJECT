@@ -27,3 +27,34 @@ body {
     margin: 0;
     font-size: 1.5em;
 }
+
+#favouritesTable {
+    width: 80%; /* Ajusta el ancho de la tabla */
+    margin: 20px auto; /* Centra la tabla y añade un margen */
+    border-collapse: collapse; /* Combina bordes de celdas adyacentes */
+    background-color: #ffffff; /* Color de fondo de la tabla */
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* Sombra alrededor de la tabla */
+    border-radius: 8px; /* Esquinas redondeadas */
+}
+
+#favouritesTable th, #favouritesTable td {
+    padding: 15px; /* Espaciado interno */
+    text-align: center; /* Centra el texto */
+    border: 1px solid #ccc; /* Bordes de las celdas */
+}
+
+#favouritesTable th {
+    background-color: #007bff; /* Color de fondo para el encabezado */
+    color: white; /* Color del texto en el encabezado */
+    font-weight: bold; /* Negrita para el texto del encabezado */
+}
+
+#favouritesTable tr:hover {
+    background-color: #f1f1f1; /* Color de fondo al pasar el ratón por encima */
+    transition: background-color 0.3s; /* Transición suave */
+}
+
+#favouritesTable img {
+    width: 50px; /* Tamaño del ícono del clima */
+    height: auto; /* Altura automática para mantener la relación de aspecto */
+}

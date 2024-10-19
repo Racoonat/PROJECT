@@ -21,6 +21,8 @@ const setFavouriteButton = document.getElementById('set-favourite');
 let favouriteCities = [];
 let unitSymbol = changeUnitSymbol(unitSelect.value);
 
+let actualCity;
+
 //--------------------------GET TEMPERATURE---------------------------------------------------------------
 
 async function getWeather(city) { 
@@ -39,11 +41,10 @@ async function getWeatherByCoordinates(lat,lon) {
     const weatherDescription = data.weather[0].description;
 
     cityUpdate(data.name);
-    getHourlyForecast(lat,lon);
+    getHourlyForecast(lat,lon); 
     getDailyForecast(lat,lon);
     updateAppStyle(temperature, data.sys.sunrise, data.sys.sunset);
-    checkFavouriteCity(data.name);
-
+    checkFavouriteCity();
 
     temperatureDiv.innerText = `${temperature} ${unitSymbol}`;
     weatherIcon.innerHTML = `<img src="http://openweathermap.org/img/wn/${icon}@2x.png" alt="weather icon">`;
@@ -285,14 +286,15 @@ toggleSearchButton.addEventListener('click', () => {
 
 //--------------------------CHECK IF THE CITY IS A FAVOURITE ONE---------------------------------------------------------------
 
-function checkFavouriteCity(city) {
-    if (favouriteCities.includes(city)) {
+function checkFavouriteCity() {
+    if (favouriteCities.includes(actualCity)) {
         favouriteIcon.style.visibility = 'visible';
         setFavouriteButton.innerText="Remove as a favourite"; 
     } else {
         favouriteIcon.style.visibility = 'hidden'; 
         setFavouriteButton.innerText="Set as a favourite"; 
     }
+    return favouriteCities.includes(actualCity);
 }
 //--------------------------SET A CITY AS A FAVOURITE (OR REMOVE IT)---------------------------------------------------------------
 
@@ -310,9 +312,18 @@ setFavouriteButton.addEventListener('click',() => {
 //--------------------------SAVE THE FAVORITE LIST---------------------------------------------------------------
 
 function saveFavourites() {
-    localStorage.setItem('favorites', JSON.stringify(favouriteCities));
+    localStorage.setItem('favourites', JSON.stringify(favouriteCities));
 }
 
-let actualCity = 'vallecas';
-getWeather(actualCity);
+
+function loadPage(){
+    favouriteCities=  JSON.parse(localStorage.getItem('favourites')) || [];
+    actualCity=  JSON.parse(localStorage.getItem('city')) || 'vallecas';
+    console.log(favouriteCities);
+    console.log(actualCity);
+    getWeather(actualCity);
+}
+
+loadPage();
+
 //here I am using a default city to be seen when you first open the app. I choose my home City :)
