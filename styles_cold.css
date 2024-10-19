@@ -37,6 +37,11 @@ body {
     cursor: pointer;
     margin-left: 5px;
     margin-right: 5px;
+    transition: transform 0.3s;
+}
+
+.top-bar button:hover {
+    transform: scale(1.2);
 }
 
 .top-bar select {
@@ -107,12 +112,13 @@ body {
     margin-top: 60px;
 }
 
-.temperature {
-    font-size: 3em;
-    font-weight: bold;
-    margin-top: 10px;
+#temperature {
+    font-size: 4em; /* Tamaño de fuente aún más grande para la temperatura */
+    font-weight: bold; /* Mantener la negrita */
+    color: #000000; /* Color azul para la temperatura */
+    margin: 10px 0; /* Espacio superior e inferior */
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2); /* Sombra para darle más profundidad */
 }
-
 
 .weather-display {
     display: flex;
@@ -123,7 +129,7 @@ body {
 .temperature-info {
     width: 50%;
     text-align: center;
-    padding: 20px;
+    padding: 20px; /* Espacio alrededor del contenido */
 }
 
 #chartdays {
@@ -191,3 +197,24 @@ body {
     margin-top: 20px;
 }
 
+#icon {
+    size: 9em; /* Tamaño del icono del tiempo */
+    margin-bottom: 10px; /* Espacio inferior */
+    transition: transform 0.3s; /* Transición suave para el efecto hover */
+    color: #ffcc00; /* Color del icono para destacarlo */
+}
+
+#icon:hover {
+    transform: scale(1.2); /* Aumenta el tamaño del icono al pasar el ratón */
+}
+
+#weather {
+    font-size: 1.8em; /* Tamaño del texto del clima */
+    color: #555; /* Color gris oscuro para el texto */
+    margin-top: 5px; /* Espacio superior para separarlo de la temperatura */
+}
+
+
+#favourite-list:hover {
+    transform: scale(1.2);
+}

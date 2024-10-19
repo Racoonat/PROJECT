@@ -14,6 +14,7 @@
     <header class="top-bar">
         <h1>Weather App by Nata 🦝</h1>
         <div class="navigation">
+            <button id="favourite-list" style="cursor: pointer;" onclick="location.href='favourites.html'">⭐</button>
             <button id="toggleSearchButton" style="cursor: pointer;">🔍</button>
             <select id="unitSelect">
                 <option value="metric">Celsius (°C)</option>
@@ -42,8 +43,8 @@
 
     <div class="weather-display">
         <div class="temperature-info">
-            <div id="temperature">--</div>
             <div id="icon"></div>
+            <div id="temperature">--</div>
             <div id="weather"></div>
         </div>
         <div id="chartdays"></div>

@@ -46,7 +46,7 @@ async function getWeatherByCoordinates(lat,lon) {
 
 
     temperatureDiv.innerText = `${temperature} ${unitSymbol}`;
-    weatherIcon.innerHTML = `<img src="http://openweathermap.org/img/wn/${icon}@2x.png" alt="weather icon" style="width: 50px; height: 50px;">`;
+    weatherIcon.innerHTML = `<img src="http://openweathermap.org/img/wn/${icon}@2x.png" alt="weather icon">`;
     weather.innerText = `${weatherDescription.charAt(0).toUpperCase() + weatherDescription.slice(1)}`;
 }
 
@@ -304,7 +304,14 @@ setFavouriteButton.addEventListener('click',() => {
         favouriteCities.push(actualCity);
     }
     checkFavouriteCity(actualCity);
+    saveFavourites();
 });
+
+//--------------------------SAVE THE FAVORITE LIST---------------------------------------------------------------
+
+function saveFavourites() {
+    localStorage.setItem('favorites', JSON.stringify(favouriteCities));
+}
 
 let actualCity = 'vallecas';
 getWeather(actualCity);
