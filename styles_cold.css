@@ -105,15 +105,6 @@ body {
 .weather-info {
     text-align: center;
     margin-top: 60px;
-    color: #333;
-}
-
-#cityName {
-    font-size: 2em;
-    font-weight: bold;
-    text-align: center;
-    margin-top: 11px;
-    margin-bottom: 22px;
 }
 
 .temperature {
@@ -122,11 +113,6 @@ body {
     margin-top: 10px;
 }
 
-#charthours {
-    width: 90%;
-    height: 450px;
-    margin-top: 20px;
-}
 
 .weather-display {
     display: flex;
@@ -149,3 +135,59 @@ body {
     border-radius: 8px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
+
+#cityContainer {
+    display: flex;
+    align-items: center;
+    margin-right: auto;
+    margin-left: 50px;
+}
+
+#cityName {
+    font-size: 2em;
+    font-weight: bold;
+    margin-right: 10px;
+}
+
+#favouriteIcon {
+    font-size: 1.5em;
+    margin-right: 10px;
+    visibility: hidden;
+}
+
+#set-favourite {
+    font-size: 1em;
+    padding: 5px 10px;
+    background-color: #f5f5f5;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+#actualCity {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    margin: 20px 0;
+}
+
+#toggleSearchButton {
+    margin-left: 5px;
+}
+
+.navigation {
+    display: flex;
+    align-items: center;
+}
+
+#charthours {
+    width: 90%;
+    height: 450px;
+    padding: 20px;
+    background-color: #f9f9f9;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    margin-top: 20px;
+}
+

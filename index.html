@@ -13,12 +13,14 @@
 
     <header class="top-bar">
         <h1>Weather App by Nata 🦝</h1>
-        <button id="toggleSearchButton" style="cursor: pointer;">🔍</button>
-        <select id="unitSelect">
-            <option value="metric">Celsius (°C)</option>
-            <option value="imperial">Fahrenheit (°F)</option>
-            <option value="standard">Kelvin (K)</option>
-        </select>
+        <div class="navigation">
+            <button id="toggleSearchButton" style="cursor: pointer;">🔍</button>
+            <select id="unitSelect">
+                <option value="metric">Celsius (°C)</option>
+                <option value="imperial">Fahrenheit (°F)</option>
+                <option value="standard">Kelvin (K)</option>
+            </select>
+        </div>
     </header>
 
     <div class="search-bar" id="search-bar" style="display: none">
@@ -30,8 +32,10 @@
     </div>
 
     <div id="actualCity">
-        <div id="cityName">City not found</div>
-        <div id="favouriteIcon">⭐</div>
+        <div id="cityContainer">
+            <div id="cityName">City not found</div>
+            <div id="favouriteIcon">⭐</div>
+        </div>
         <button id="set-favourite">Set as a Favourite</button>
     </div>
     
