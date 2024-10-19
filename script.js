@@ -132,23 +132,29 @@ async function getHourlyForecast(lat, lon) {
     
     const hours = [];
     const temperatures = [];
-    const weathericons = [];
+    const weatherIconsByHour = {}; // Objeto para asociar iconos a horas
 
     // Solo toma las próximas 24 horas
     data.list.slice(0, 24).forEach(entry => {
         const date = new Date(entry.dt * 1000);
-        hours.push(date.getHours() + ':00'); 
-        if(entry.main.temp==0){
+        const hourString = date.getHours() + ':00'; // Convierte la hora a un formato legible
+        hours.push(hourString); 
+
+        if (entry.main.temp == 0) {
             temperatures.push(0.01);
-        }
-        else{
+        } else {
             temperatures.push(entry.main.temp); 
         }
-        weathericons.push(entry.weather[0].icon || '❓'); // Obtiene el icono
+
+        // Asocia el icono con la hora correspondiente
+        weatherIconsByHour[hourString] = entry.weather[0].icon || '❓';
     });
 
-    renderHourlyChart(hours, temperatures, weathericons); // Pasa los iconos a la función de renderizado
+    console.log(weatherIconsByHour); // Verifica que el objeto tiene las horas como claves y los iconos como valores
+
+    renderHourlyChart(hours, temperatures, weatherIconsByHour); // Pasa los iconos como un objeto
 }
+
 
 function renderHourlyChart(hours, temperatures, icons) {
     let chartData = {
@@ -170,9 +176,10 @@ function renderHourlyChart(hours, temperatures, icons) {
         height: 200,
         tooltipOptions: {
             formatTooltipY: (d) => { 
-                let icon;
-                if(d){ icon= icons.shift()}
-                return `${d} ${unitSymbol} <img src="http://openweathermap.org/img/wn/${icon}@2x.png" alt="weather icon" style="width: 20px; height: 20px;">`; 
+                return `${d} ${unitSymbol}`; 
+            },
+            formatTooltipX: (d) => { 
+                return `<img src="http://openweathermap.org/img/wn/${icons[d]}@2x.png" alt="weather icon" style="width: 20px; height: 20px;">`; 
             }
         }
     });
@@ -191,10 +198,9 @@ async function getDailyForecast(lat, lon) {
         const date = new Date(entry.dt * 1000);
         const dateString = date.toLocaleDateString('en-GB'); 
 
-    
         if (!dailyTemperatures[dateString]) {
             dailyTemperatures[dateString] = [];
-            weatherIcons[dateString] = entry.weather[0].icon; 
+            weatherIcons[dateString] = entry.weather[0].icon; // Guarda el icono con la fecha como clave
         }
         
         dailyTemperatures[dateString].push(entry.main.temp);
@@ -202,25 +208,27 @@ async function getDailyForecast(lat, lon) {
 
     const days = [];
     const temperatures = [];
-    const icons = []; 
+    const iconsByDate = {};  // Objeto para almacenar iconos asociados a fechas
 
     const dateKeys = Object.keys(dailyTemperatures).slice(0, 7); // Obtiene las claves para los próximos 7 días
 
     dateKeys.forEach(dateKey => {
         const avgTemp = dailyTemperatures[dateKey].reduce((sum, temp) => sum + temp, 0) / dailyTemperatures[dateKey].length;
         days.push(dateKey); 
-        if(avgTemp.toFixed(2)==0){
+        if(avgTemp.toFixed(2) == 0) {
             temperatures.push(0.01);
-        }
-        else{
+        } else {
             temperatures.push(avgTemp.toFixed(2));
         }
         
-        icons.push(weatherIcons[dateKey]); 
+        iconsByDate[dateKey] = weatherIcons[dateKey]; // Asigna el icono a la fecha correspondiente
     });
 
-    renderDailyChart(days, temperatures, icons); 
+    console.log(iconsByDate); // Verifica que el objeto tiene las fechas como claves y los iconos como valores
+
+    renderDailyChart(days, temperatures, iconsByDate); 
 }
+
 
 function renderDailyChart(days, temperatures, icons) {
     let chartData = {
@@ -242,9 +250,10 @@ function renderDailyChart(days, temperatures, icons) {
         height: 200,
         tooltipOptions: {
             formatTooltipY: (d) => { 
-                let icon;
-                if(d){ icon= icons.shift()}
-                return `${d} ${unitSymbol} <img src="http://openweathermap.org/img/wn/${icon}@2x.png" alt="weather icon" style="width: 20px; height: 20px;">`; 
+                return `${d} ${unitSymbol}`; 
+            },
+            formatTooltipX: (d) => { 
+                return `<img src="http://openweathermap.org/img/wn/${icons[d]}@2x.png" alt="weather icon" style="width: 20px; height: 20px;">`; 
             }
         }
     });
@@ -298,10 +307,10 @@ const toggleSearchButton = document.getElementById('toggleSearchButton');
 const searchBar = document.getElementById('search-bar');
 
 toggleSearchButton.addEventListener('click', () => {
-    if (searchBar.style.display === 'none' || searchBar.style.display === '') {
-        searchBar.style.display = 'block'; // Muestra la barra de búsqueda
+    if (searchBar.style.display === 'none') {
+        searchBar.style.display = '';
     } else {
-        searchBar.style.display = 'none'; // Oculta la barra de búsqueda
+        searchBar.style.display = 'none';
     }
 });
 
