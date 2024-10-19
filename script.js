@@ -1,45 +1,48 @@
 const apiKey = '540ba1d11ea065ab6ecf6073e792d2c9';
-const temperatureDiv = document.getElementById('temperature');
-const searchButton = document.getElementById('searchButton');
+
+const toggleSearchButton = document.getElementById('toggleSearchButton');
 const unitSelect = document.getElementById('unitSelect');
-const cityInput = document.getElementById('cityInput');
+
+const searchBar = document.getElementById('search-bar');
+const citySearch = document.getElementById('citySearch'); //div
+const cityInput = document.getElementById('cityInput'); //search bar
+const searchButton = document.getElementById('searchButton');
 const locationButton = document.getElementById('locationButton'); 
-const citySearch = document.getElementById('citySearch'); 
+
+const temperatureDiv = document.getElementById('temperature');
 const weather=document.getElementById('weather');
 const weatherIcon=document.getElementById('icon');
+
 let cityName= document.getElementById('cityName'); 
+const favouriteIcon = document.getElementById('favouriteIcon');
+const setFavouriteButton = document.getElementById('set-favourite');
 
 
-
-
-let city= 'vallecas';
-//here I am using a default city to be seen when you first open the app. I choose my home City :)
-
+let favouriteCities = [];
 let unitSymbol = changeUnitSymbol(unitSelect.value);
-
-
-
-
 
 //--------------------------GET TEMPERATURE---------------------------------------------------------------
 
-async function getTemperature(city) { 
+async function getWeather(city) { 
     const { lat, lon } = await getCoordinates(city);
-    getTemperatureByCoordinates(lat,lon);
+    getWeatherByCoordinates(lat,lon);
 }
 
-async function getTemperatureByCoordinates(lat,lon) { 
+async function getWeatherByCoordinates(lat,lon) { 
     const weatherUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=${unitSelect.value}`;
     const response = await fetch(weatherUrl);
-    if (!response.ok) throw new Error('Error with the temperature');
+
+
     const data = await response.json();
     const temperature = data.main.temp;
     const icon=data.weather[0].icon;
     const weatherDescription = data.weather[0].description;
+
     cityUpdate(data.name);
     getHourlyForecast(lat,lon);
     getDailyForecast(lat,lon);
     updateAppStyle(temperature, data.sys.sunrise, data.sys.sunset);
+    checkFavouriteCity(data.name);
 
 
     temperatureDiv.innerText = `${temperature} ${unitSymbol}`;
@@ -48,6 +51,7 @@ async function getTemperatureByCoordinates(lat,lon) {
 }
 
 //--------------------------GET LAN AND LON GIVEN A CITY NAME---------------------------------------------------------------
+
 async function getCoordinates(city) {
     const geocodingUrl = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}`;
     const response = await fetch(geocodingUrl);
@@ -55,35 +59,27 @@ async function getCoordinates(city) {
     const data = await response.json();
     return { lat: data.coord.lat, lon: data.coord.lon };
 }
-
-
 //--------------------------CHANGE LOCATION TO CURRENT LOCATION---------------------------------------------------------------
 
 function getLocation() {
-    return new Promise((resolve, reject) => {
+    return new Promise(resolve => {
         if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(
-                position => {
-                    const lat = position.coords.latitude;
-                    const lon = position.coords.longitude;
-                    resolve({ lat, lon });
-                },
-                error => {
-                    console.error('Error obtaining location:', error);
-                    reject(error);
-                }
-            );
-        } else {
-            reject(new Error('Geolocation is not supported by the browser'));
+            navigator.geolocation.getCurrentPosition(position => {
+                const lat = position.coords.latitude;
+                const lon = position.coords.longitude;
+                resolve({ lat, lon });
+            });
         }
     });
 }
 
 //--------------------------EVENT LISTENERS---------------------------------------------------------------
 
+//--------------------------CHANGE UNIT SYMBOLS---------------------------------------------------------------
+
 unitSelect.addEventListener('change', () => {
     unitSymbol=changeUnitSymbol(unitSelect.value);
-    getTemperature(city);
+    getWeather(actualCity);
 });
 
 
@@ -96,30 +92,29 @@ function changeUnitSymbol(unit) {
     return symbols[unit];
 }
 
+//--------------------------SEARCH NEW CITY---------------------------------------------------------------
 
 citySearch.addEventListener('submit', (event) => {
     event.preventDefault();
-    if (cityInput) {
-        city=cityInput.value;
-        console.log(city);
-        getTemperature(city); 
+    if (cityInput.value.trim()) {
+        getWeather(cityInput.value.trim()); 
     }
 });
 
+//--------------------------SET CITY AS ACTUAL LOCATION---------------------------------------------------------------
 
 locationButton.addEventListener('click', () => {
     getLocation().then(({ lat, lon }) => {
-        getTemperatureByCoordinates(lat, lon);
-    }).catch(error => {
-        console.log("Can't found current position")
-    });
+        getWeatherByCoordinates(lat, lon);
+    })
 });
 
 //--------------------------UPDATE THE CITY---------------------------------------------------------------
 
 function cityUpdate(newCity) {
-    city=newCity;
-    cityName.innerText = city; 
+    actualCity=newCity;
+    cityName.innerText = newCity; 
+    checkFavouriteCity(newCity);
 }
 
 //--------------------------GET 24 HOUR FORECAST---------------------------------------------------------------
@@ -132,27 +127,17 @@ async function getHourlyForecast(lat, lon) {
     
     const hours = [];
     const temperatures = [];
-    const weatherIconsByHour = {}; // Objeto para asociar iconos a horas
+    const weatherIconsByHour = {};
 
-    // Solo toma las próximas 24 horas
-    data.list.slice(0, 24).forEach(entry => {
+    data.list.slice(0, 8).forEach(entry => {
         const date = new Date(entry.dt * 1000);
-        const hourString = date.getHours() + ':00'; // Convierte la hora a un formato legible
+        const hourString = date.getHours() + ':00'; 
         hours.push(hourString); 
-
-        if (entry.main.temp == 0) {
-            temperatures.push(0.01);
-        } else {
-            temperatures.push(entry.main.temp); 
-        }
-
-        // Asocia el icono con la hora correspondiente
+        temperatures.push(entry.main.temp); 
         weatherIconsByHour[hourString] = entry.weather[0].icon || '❓';
     });
 
-    console.log(weatherIconsByHour); // Verifica que el objeto tiene las horas como claves y los iconos como valores
-
-    renderHourlyChart(hours, temperatures, weatherIconsByHour); // Pasa los iconos como un objeto
+    renderHourlyChart(hours, temperatures, weatherIconsByHour); 
 }
 
 
@@ -184,23 +169,25 @@ function renderHourlyChart(hours, temperatures, icons) {
         }
     });
 }
+//--------------------------GET 7 DAYS FORECAST---------------------------------------------------------------
+
+//--------------------------GET 5 DAYS FORECAST---------------------------------------------------------------
 
 async function getDailyForecast(lat, lon) {
     const dailyWeatherUrl = `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${apiKey}&units=${unitSelect.value}`;
     const response = await fetch(dailyWeatherUrl);
     if (!response.ok) throw new Error('Error with daily forecast');
     const data = await response.json();
-    
     const dailyTemperatures = {};
     const weatherIcons = {}; 
 
     data.list.forEach(entry => {
         const date = new Date(entry.dt * 1000);
-        const dateString = date.toLocaleDateString('en-GB'); 
+        const dateString = date.toLocaleDateString('en-GB');
 
         if (!dailyTemperatures[dateString]) {
             dailyTemperatures[dateString] = [];
-            weatherIcons[dateString] = entry.weather[0].icon; // Guarda el icono con la fecha como clave
+            weatherIcons[dateString] = entry.weather[0].icon; 
         }
         
         dailyTemperatures[dateString].push(entry.main.temp);
@@ -208,27 +195,19 @@ async function getDailyForecast(lat, lon) {
 
     const days = [];
     const temperatures = [];
-    const iconsByDate = {};  // Objeto para almacenar iconos asociados a fechas
-
-    const dateKeys = Object.keys(dailyTemperatures).slice(0, 7); // Obtiene las claves para los próximos 7 días
+    const iconsByDate = {}; 
+    const dateKeys = Object.keys(dailyTemperatures).slice(1, 6); 
 
     dateKeys.forEach(dateKey => {
         const avgTemp = dailyTemperatures[dateKey].reduce((sum, temp) => sum + temp, 0) / dailyTemperatures[dateKey].length;
         days.push(dateKey); 
-        if(avgTemp.toFixed(2) == 0) {
-            temperatures.push(0.01);
-        } else {
-            temperatures.push(avgTemp.toFixed(2));
-        }
-        
-        iconsByDate[dateKey] = weatherIcons[dateKey]; // Asigna el icono a la fecha correspondiente
-    });
+        temperatures.push(avgTemp.toFixed(2));
 
-    console.log(iconsByDate); // Verifica que el objeto tiene las fechas como claves y los iconos como valores
+        iconsByDate[dateKey] = weatherIcons[dateKey];
+    });
 
     renderDailyChart(days, temperatures, iconsByDate); 
 }
-
 
 function renderDailyChart(days, temperatures, icons) {
     let chartData = {
@@ -243,7 +222,7 @@ function renderDailyChart(days, temperatures, icons) {
     };
 
     let chart = new frappe.Chart('#chartdays', {
-        title: "Next 7 Days",
+        title: "Next 5 Days",
         data: chartData,
         type: 'line', 
         colors: ['#eb5146'],
@@ -258,11 +237,6 @@ function renderDailyChart(days, temperatures, icons) {
         }
     });
 }
-
-
-
-
-
 
 //--------------------------CHANGE STYLESHEET---------------------------------------------------------------
 
@@ -299,14 +273,9 @@ function loadStylesheet(filename) {
     document.head.appendChild(link);
 }
 
-//-----------------------------------------------------------------------------------------
+//--------------------------HIDE SEARCH BAR---------------------------------------------------------------
 
-
-
-const toggleSearchButton = document.getElementById('toggleSearchButton');
-const searchBar = document.getElementById('search-bar');
-
-toggleSearchButton.addEventListener('click', () => {
+toggleSearchButton.addEventListener('click', () => { 
     if (searchBar.style.display === 'none') {
         searchBar.style.display = '';
     } else {
@@ -314,6 +283,29 @@ toggleSearchButton.addEventListener('click', () => {
     }
 });
 
+//--------------------------CHECK IF THE CITY IS A FAVOURITE ONE---------------------------------------------------------------
 
-getTemperature(city);
+function checkFavouriteCity(city) {
+    if (favouriteCities.includes(city)) {
+        favouriteIcon.style.visibility = 'visible';
+        setFavouriteButton.innerText="Remove as a favourite"; 
+    } else {
+        favouriteIcon.style.visibility = 'hidden'; 
+        setFavouriteButton.innerText="Set as a favourite"; 
+    }
+}
+//--------------------------SET A CITY AS A FAVOURITE (OR REMOVE IT)---------------------------------------------------------------
 
+setFavouriteButton.addEventListener('click',() => {
+  
+    if (favouriteCities.includes(actualCity)) {
+        favouriteCities = favouriteCities.filter(city => city !== actualCity);
+    } else {
+        favouriteCities.push(actualCity);
+    }
+    checkFavouriteCity(actualCity);
+});
+
+let actualCity = 'vallecas';
+getWeather(actualCity);
+//here I am using a default city to be seen when you first open the app. I choose my home City :)
