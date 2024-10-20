@@ -133,13 +133,14 @@ body {
 }
 
 #chartdays {
-    width: 50%;
-    height: 200px;
+    width: 90%;
+    height: 450px;
     padding: 20px;
     background-color: #f9f9f9;
     border: 1px solid #ccc;
     border-radius: 8px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    margin-top: 20px;
 }
 
 #cityContainer {
@@ -217,4 +218,53 @@ body {
 
 #favourite-list:hover {
     transform: scale(1.2);
+}
+@media (max-width: 768px) {
+    /* Ajustar el tamaño del contenedor de gráficos */
+    #chartdays, #charthours {
+        width: 100%;
+        height: 300px;
+    }
+
+    /* Hacer que los contenedores de la temperatura se alineen verticalmente */
+    .weather-display {
+        flex-direction: column;
+    }
+
+    /* Aumentar el tamaño del texto en pantallas más pequeñas */
+    .temperature {
+        font-size: 3em;
+    }
+
+    /* Ajustar el contenedor de la ciudad */
+    #cityContainer {
+        flex-direction: column;
+        align-items: center;
+        margin: 0;
+    }
+
+    /* Botones más pequeños en pantallas pequeñas */
+    .top-bar button, .top-bar select, .search-bar button, .search-bar #locationButton {
+        font-size: 1em;
+        padding: 5px 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    /* Tamaños aún más pequeños para pantallas muy pequeñas */
+    .temperature {
+        font-size: 2.5em;
+    }
+
+    .weather-Icon {
+        font-size: 7em;
+    }
+
+    .top-bar h1 {
+        font-size: 1.2em;
+    }
+
+    .search-bar input[type="text"] {
+        max-width: 150px;
+    }
 }

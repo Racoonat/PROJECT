@@ -57,10 +57,8 @@ async function getWeatherByCoordinatesOption1(lat,lon) {
 
     cityUpdate(data.name);
     updateAppStyle(temperature, data.sys.sunrise, data.sys.sunset);
-    checkFavouriteCity();
-    getHourlyChart(lat,lon);
 
-    temperatureOption1.innerText = `${temperature} ${unitSymbol}`;
+    temperatureOption1.innerText = `${temperature.toFixed(2)} ${unitSymbol}`;
     weatherIconOption1.innerHTML = `<img src="http://openweathermap.org/img/wn/${icon}@2x.png" alt="weather icon">`;
     weatherOption1.innerText = `${weatherDescription.charAt(0).toUpperCase() + weatherDescription.slice(1)}`;
 }
@@ -70,11 +68,19 @@ async function getWeatherByCoordinatesOption2(lat, lon) {
     const response = await fetch(weatherUrl);
     const data = await response.json();
 
-    const temperature = data.current.temp_c; // o temp_f si usas unidades imperiales
+    let temperature;
+    if(unitSelect.value==="metric"){
+        temperature = data.current.temp_c;
+    }else if(unitSelect.value==="imperial"){
+        temperature = data.current.temp_f;
+    }else{
+        temperature = data.current.temp_c+273.15;
+    }
+    
     const icon = data.current.condition.icon;
     const weatherDescription = data.current.condition.text;
 
-    temperatureOption2.innerText = `${temperature} ${unitSymbol}`; // °C o °F dependiendo de tu símbolo
+    temperatureOption2.innerText = `${temperature.toFixed(2)} ${unitSymbol}`; 
     weatherIconOption2.innerHTML = `<img src="https:${icon}" alt="weather icon"  style="width: 100px; height: 100px;">`;
     weatherOption2.innerText = `${weatherDescription.charAt(0).toUpperCase() + weatherDescription.slice(1)}`;
 
@@ -83,35 +89,38 @@ async function getWeatherByCoordinatesOption2(lat, lon) {
 async function getWeatherByCoordinatesOption3(lat, lon) {
     const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`;
     const response = await fetch(weatherUrl);
-    
-    if (!response.ok) throw new Error('Error fetching data from Open-Meteo');
-    
     const data = await response.json();
+    
+    let temperature; 
+    if (unitSelect.value === 'imperial') {
+        temperature = (data.current_weather.temperature * 9/5) + 32; 
+    } else if (unitSelect.value === 'standard') {
+        temperature = data.current_weather.temperature + 273.15; 
+    } else {
+        temperature = data.current_weather.temperature;
+    }
 
-    const temperature = data.current_weather.temperature; // Temperatura actual
-    const icon = getWeatherIcon(data.current_weather.weathercode); // Icono del clima
-    const weatherDescription = getWeatherDescription(data.current_weather.weathercode); // Descripción del clima
+    const icon = getWeatherIcon(data.current_weather.weathercode); 
+    const weatherDescription = getWeatherDescription(data.current_weather.weathercode); 
 
-    temperatureOption3.innerText = `${temperature} ${unitSymbol}`;
+    temperatureOption3.innerText = `${temperature.toFixed(2)} ${unitSymbol}`;
     weatherIconOption3.innerHTML = `<img src="${icon}" alt="weather icon" style="width: 100px; height: 100px;">`;
     weatherOption3.innerText = weatherDescription;
 }
 
-// Función para mapear códigos de clima a iconos
 function getWeatherIcon(weatherCode) {
     const iconMap = {
-        0: 'https://www.weatherbit.io/static/img/icons/c01d.png', // Despejado
-        1: 'https://www.weatherbit.io/static/img/icons/c02d.png', // Parcialmente nublado
-        2: 'https://www.weatherbit.io/static/img/icons/c03d.png', // Nublado
-        3: 'https://www.weatherbit.io/static/img/icons/r01d.png', // Lluvia ligera
-        4: 'https://www.weatherbit.io/static/img/icons/r02d.png', // Lluvia
-        5: 'https://www.weatherbit.io/static/img/icons/s01d.png', // Nieve ligera
-        // Agrega más mapeos según los códigos de Open-Meteo
+        0: 'https://www.weatherbit.io/static/img/icons/c01d.png', 
+        1: 'https://www.weatherbit.io/static/img/icons/c02d.png', 
+        2: 'https://www.weatherbit.io/static/img/icons/c03d.png', 
+        3: 'https://www.weatherbit.io/static/img/icons/r01d.png', 
+        4: 'https://www.weatherbit.io/static/img/icons/r02d.png', 
+        5: 'https://www.weatherbit.io/static/img/icons/s01d.png', 
+
     };
-    return iconMap[weatherCode] || 'https://www.weatherbit.io/static/img/icons/c01d.png'; // Icono por defecto
+    return iconMap[weatherCode] || 'https://www.weatherbit.io/static/img/icons/c01d.png'; 
 }
 
-// Función para mapear códigos de clima a descripciones
 function getWeatherDescription(weatherCode) {
     const descriptionMap = {
         0: 'Clear',
@@ -120,7 +129,6 @@ function getWeatherDescription(weatherCode) {
         3: 'Light Rain',
         4: 'Rain',
         5: 'Light Snow',
-        // Add more mappings according to Open-Meteo codes
     };
     return descriptionMap[weatherCode] || 'Unknown';
 }
@@ -162,7 +170,7 @@ function getLocation() {
 
 unitSelect.addEventListener('change', () => {
     unitSymbol=changeUnitSymbol(unitSelect.value);
-    getWeather(actualCity);
+    loadPage();
     
 });
 
@@ -183,6 +191,7 @@ citySearch.addEventListener('submit', (event) => {
     if (cityInput.value.trim()) {
         getWeather(cityInput.value.trim()); 
     }
+    loadPage();
 });
 
 //--------------------------SET CITY AS ACTUAL LOCATION---------------------------------------------------------------
@@ -191,6 +200,7 @@ locationButton.addEventListener('click', () => {
     getLocation().then(({ lat, lon }) => {
         getWeatherByCoordinates(lat, lon);
     })
+    loadPage();
 });
 
 //--------------------------UPDATE THE CITY---------------------------------------------------------------
@@ -274,7 +284,15 @@ async function getHourlyForecastOption3(lat, lon) {
     const temperatures = [];
     const hourlyTemperatures = data.hourly.temperature_2m.slice(0, 24);
     hourlyTemperatures.forEach(temp => {
-        temperatures.push(temp.toFixed(2)); // Asegúrate de usar toFixed para tener dos decimales
+        let temperature;
+        if(unitSelect.value==="imperial"){
+            temperature=(temp * 9/5) + 32;
+        }else if(unitSelect.value==="standard"){
+            temperature =Number(temp)+(273.15);
+        }else{
+            temperature =temp;
+        }   
+        temperatures.push(temperature.toFixed(2));
     });
     return temperatures;
 }
@@ -287,17 +305,17 @@ async function getHourlyChart(lat,lon) {
         labels: hours,
         datasets:[
             {
-                name: "OPTION 1",
+                name: "OpenWeather",
                 type: 'line',
                 values: temperatures1
             },
             {
-                name: "OPTION 2",
+                name: "WeatherApi",
                 type: 'line',
                 values: temperatures2
             },
             {
-                name: "OPTION 3",
+                name: "Open Meteo",
                 type: 'line',
                 values: temperatures3
             }
@@ -338,7 +356,6 @@ async function getDailyForecastOption1(lat, lon) {
 async function getDailyForecastOption2(lat, lon) {
     const dailyWeatherUrl = `https://api.weatherapi.com/v1/forecast.json?key=${apiKey2}&q=${lat},${lon}&days=7`; 
     const response = await fetch(dailyWeatherUrl);
-    if (!response.ok) throw new Error('Error with daily forecast');
     const data = await response.json();
 
     const dailyTemperatures = [];
@@ -347,8 +364,14 @@ async function getDailyForecastOption2(lat, lon) {
     const forecastDays = data.forecast.forecastday;
 
     forecastDays.forEach(day => {
-        const averageTemp = day.day.avgtemp_c.toFixed(2); // Temperatura media en Celsius
-        dailyTemperatures.push(averageTemp);
+        let averageTemp= (day.day.avgtemp_c+273.15).toFixed(2);
+        if(unitSelect.value==="metric"){
+            averageTemp = day.day.avgtemp_c.toFixed(2);
+        }else if(unitSelect.value==="imperial"){
+            averageTemp = day.day.avgtemp_f;
+        }
+        let temperature = averageTemp;
+        dailyTemperatures.push(temperature);
         weatherIcons.push(day.day.condition.icon);
         days.push(day.date);
     });
@@ -359,7 +382,6 @@ async function getDailyForecastOption2(lat, lon) {
 async function getDailyForecastOption3(lat, lon) {
     const dailyWeatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=temperature_2m_max,temperature_2m_min&timezone=auto`;
     const response = await fetch(dailyWeatherUrl);
-    if (!response.ok) throw new Error('Error with daily forecast');
     const data = await response.json();
 
     const dailyTemperatures = [];
@@ -367,10 +389,16 @@ async function getDailyForecastOption3(lat, lon) {
 
     dailyData.temperature_2m_max.forEach((maxTemp, index) => {
         const minTemp = dailyData.temperature_2m_min[index];
-        const averageTemp = ((maxTemp + minTemp) / 2).toFixed(2); // Calculamos la media
-        dailyTemperatures.push(averageTemp);
+        let averageTemp = ((maxTemp + minTemp) / 2).toFixed(2);
+        if(unitSelect.value==="imperial"){
+            dailyTemperatures.push((averageTemp * 9/5) + 32);
+        }else if(unitSelect.value==="metric"){
+            dailyTemperatures.push(averageTemp);
+        }else{
+            let check =Number(averageTemp)+(273.15);
+            dailyTemperatures.push(check);
+        }   
     });
-
     return dailyTemperatures;
 }
 
@@ -378,22 +406,21 @@ async function getDailyChart(lat, lon) {
     const dailyTemperatures1 = await getDailyForecastOption1(lat, lon);
     const {dailyTemperatures2,weatherIcons,days} = await getDailyForecastOption2(lat, lon);
     const dailyTemperatures3 = await getDailyForecastOption3(lat, lon);
-    console.log(dailyTemperatures2);
     let chartData={
         labels:days,
         datasets:[
             {
-                name: "OPTION 1",
+                name: "OpenWeather",
                 type: 'line',
                 values: dailyTemperatures1
             },
             {
-                name: "OPTION 2",
+                name: "WeatherApi",
                 type: 'line',
                 values: dailyTemperatures2
             },
             {
-                name: "OPTION 3",
+                name: "Open Meteo",
                 type: 'line',
                 values: dailyTemperatures3
             }
@@ -477,7 +504,6 @@ function checkFavouriteCity() {
         favouriteIcon.style.visibility = 'hidden'; 
         setFavouriteButton.innerText="Set as a favourite"; 
     }
-    return favouriteCities.includes(actualCity);
 }
 //--------------------------SET A CITY AS A FAVOURITE (OR REMOVE IT)---------------------------------------------------------------
 
@@ -490,6 +516,7 @@ setFavouriteButton.addEventListener('click',() => {
     }
     checkFavouriteCity(actualCity);
     saveFavourites();
+    loadPage();
 });
 
 //--------------------------SAVE THE FAVORITE LIST---------------------------------------------------------------
@@ -503,6 +530,7 @@ function saveFavourites() {
 async function loadPage(){
     const { lat, lon } =await getCoordinates(actualCity);
     getWeather(actualCity);
+    checkFavouriteCity();
     getHourlyChart(lat,lon);
     getDailyChart(lat,lon); 
 }
