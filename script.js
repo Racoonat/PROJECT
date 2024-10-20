@@ -55,8 +55,9 @@ async function getWeatherByCoordinatesOption1(lat,lon) {
     const icon=data.weather[0].icon;
     const weatherDescription = data.weather[0].description;
 
+    
     cityUpdate(data.name);
-    updateAppStyle(temperature, data.sys.sunrise, data.sys.sunset);
+    updateAppStyle(temperature, data.sys.sunrise, data.sys.sunset, data.timezone);
 
     temperatureOption1.innerText = `${temperature.toFixed(2)} ${unitSymbol}`;
     weatherIconOption1.innerHTML = `<img src="http://openweathermap.org/img/wn/${icon}@2x.png" alt="weather icon">`;
@@ -189,7 +190,7 @@ function changeUnitSymbol(unit) {
 citySearch.addEventListener('submit', (event) => {
     event.preventDefault();
     if (cityInput.value.trim()) {
-        getWeather(cityInput.value.trim()); 
+        cityUpdate(cityInput.value.trim()); 
     }
     loadPage();
 });
@@ -451,25 +452,31 @@ function renderChart(name,chartID, chartData, icons) {
 //--------------------------CHANGE STYLESHEET---------------------------------------------------------------
 
 
-function updateAppStyle(temperature, sunrise, sunset) {
-    const currentHour = new Date().getHours();
-    const isDaytime = currentHour >= new Date(sunrise * 1000).getHours() && currentHour < new Date(sunset * 1000).getHours();
+function updateAppStyle(temperature, sunrise, sunset, timezone) {
+    const nowUTC = new Date().getTime(); 
+    const cityLocalTime = new Date(nowUTC + timezone * 1000);
+    const sunriseTime = new Date(sunrise * 1000 + timezone * 1000); 
+    const sunsetTime = new Date(sunset * 1000 + timezone * 1000); 
+    const isDaytime = cityLocalTime >= sunriseTime && cityLocalTime < sunsetTime;
+
     let stylesheet = '';
 
     if (isDaytime) {
         if (temperature > 30) {
-            stylesheet = 'styles_cold.css';
+            stylesheet = 'styles_hot.css';
         } else if (temperature > 10) {
-            stylesheet = 'styles_cold.css';
+            stylesheet = 'styles_day.css';
         } else {
             stylesheet = 'styles_cold.css';
         }
     } else {
-        stylesheet = 'styles_cold.css';
+        stylesheet = 'styles_night.css';
     }
 
     loadStylesheet(stylesheet);
 }
+
+
 
 function loadStylesheet(filename) {
     const oldLink = document.getElementById('dynamic-stylesheet');
