@@ -112,7 +112,7 @@ body {
     margin-top: 60px;
 }
 
-#temperature {
+.temperature {
     font-size: 4em; /* Tamaño de fuente aún más grande para la temperatura */
     font-weight: bold; /* Mantener la negrita */
     color: #000000; /* Color azul para la temperatura */
@@ -126,7 +126,7 @@ body {
     justify-content: space-between;
 }
 
-.temperature-info {
+.temperature-info{
     width: 50%;
     text-align: center;
     padding: 20px; /* Espacio alrededor del contenido */
@@ -197,18 +197,18 @@ body {
     margin-top: 20px;
 }
 
-#icon {
+.weather-Icon {
     size: 9em; /* Tamaño del icono del tiempo */
     margin-bottom: 10px; /* Espacio inferior */
     transition: transform 0.3s; /* Transición suave para el efecto hover */
     color: #ffcc00; /* Color del icono para destacarlo */
 }
 
-#icon:hover {
+.weather-Icon:hover {
     transform: scale(1.2); /* Aumenta el tamaño del icono al pasar el ratón */
 }
 
-#weather {
+.weather {
     font-size: 1.8em; /* Tamaño del texto del clima */
     color: #555; /* Color gris oscuro para el texto */
     margin-top: 5px; /* Espacio superior para separarlo de la temperatura */
