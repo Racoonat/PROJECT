@@ -11,7 +11,7 @@ function getFavourites() {
 
 async function getWeather(city) { 
     const { lat, lon } = await getCoordinates(city);
-    const weatherUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey1}&units=${unitSelect.value}`;
+    const weatherUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=${unitSelect.value}`;
     const response = await fetch(weatherUrl);
     const data = await response.json();
     return {
@@ -24,7 +24,7 @@ async function getWeather(city) {
 //--------------------------GET LAN AND LON GIVEN A CITY NAME---------------------------------------------------------------
 
 async function getCoordinates(city) {
-    const geocodingUrl = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey1}`;
+    const geocodingUrl = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}`;
     const response = await fetch(geocodingUrl);
     if (!response.ok) throw new Error('City not found');
     const data = await response.json();

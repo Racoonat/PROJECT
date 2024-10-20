@@ -1,5 +1,6 @@
 const apiKey1 = '540ba1d11ea065ab6ecf6073e792d2c9';
 const apiKey2 = 'c5e6103992a74b3d83e123003242010';
+const apiKey3 = '66cc7527310a45bf919b5d464efcd69c';
 
 const toggleSearchButton = document.getElementById('toggleSearchButton');
 const unitSelect = document.getElementById('unitSelect');
@@ -36,9 +37,7 @@ let actualCity;
 
 async function getWeather(city) { 
     const { lat, lon } = await getCoordinates(city);
-    getWeatherByCoordinatesOption1(lat,lon);
-    getWeatherByCoordinatesOption2(lat,lon);
-    getWeatherByCoordinatesOption3(lat,lon);
+    getWeatherByCoordinates(lat,lon);
 }
 
 async function getWeatherByCoordinates(lat,lon) { 
@@ -59,6 +58,7 @@ async function getWeatherByCoordinatesOption1(lat,lon) {
     cityUpdate(data.name);
     updateAppStyle(temperature, data.sys.sunrise, data.sys.sunset);
     checkFavouriteCity();
+    getHourlyChart(lat,lon);
 
     temperatureOption1.innerText = `${temperature} ${unitSymbol}`;
     weatherIconOption1.innerHTML = `<img src="http://openweathermap.org/img/wn/${icon}@2x.png" alt="weather icon">`;
@@ -75,25 +75,54 @@ async function getWeatherByCoordinatesOption2(lat, lon) {
     const weatherDescription = data.current.condition.text;
 
     temperatureOption2.innerText = `${temperature} ${unitSymbol}`; // °C o °F dependiendo de tu símbolo
-    weatherIconOption2.innerHTML = `<img src="https:${icon}" alt="weather icon">`;
+    weatherIconOption2.innerHTML = `<img src="https:${icon}" alt="weather icon"  style="width: 100px; height: 100px;">`;
     weatherOption2.innerText = `${weatherDescription.charAt(0).toUpperCase() + weatherDescription.slice(1)}`;
 
-    getHourlyForecastOption2(lat,lon); 
-    getDailyForecast(lat,lon);
 }
 
-async function getWeatherByCoordinatesOption3(lat,lon) { 
-    const weatherUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey1}&units=${unitSelect.value}`;
+async function getWeatherByCoordinatesOption3(lat, lon) {
+    const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`;
     const response = await fetch(weatherUrl);
+    
+    if (!response.ok) throw new Error('Error fetching data from Open-Meteo');
+    
     const data = await response.json();
 
-    const temperature = data.main.temp;
-    const icon=data.weather[0].icon;
-    const weatherDescription = data.weather[0].description;
+    const temperature = data.current_weather.temperature; // Temperatura actual
+    const icon = getWeatherIcon(data.current_weather.weathercode); // Icono del clima
+    const weatherDescription = getWeatherDescription(data.current_weather.weathercode); // Descripción del clima
 
     temperatureOption3.innerText = `${temperature} ${unitSymbol}`;
-    weatherIconOption3.innerHTML = `<img src="http://openweathermap.org/img/wn/${icon}@2x.png" alt="weather icon">`;
-    weatherOption3.innerText = `${weatherDescription.charAt(0).toUpperCase() + weatherDescription.slice(1)}`;
+    weatherIconOption3.innerHTML = `<img src="${icon}" alt="weather icon" style="width: 100px; height: 100px;">`;
+    weatherOption3.innerText = weatherDescription;
+}
+
+// Función para mapear códigos de clima a iconos
+function getWeatherIcon(weatherCode) {
+    const iconMap = {
+        0: 'https://www.weatherbit.io/static/img/icons/c01d.png', // Despejado
+        1: 'https://www.weatherbit.io/static/img/icons/c02d.png', // Parcialmente nublado
+        2: 'https://www.weatherbit.io/static/img/icons/c03d.png', // Nublado
+        3: 'https://www.weatherbit.io/static/img/icons/r01d.png', // Lluvia ligera
+        4: 'https://www.weatherbit.io/static/img/icons/r02d.png', // Lluvia
+        5: 'https://www.weatherbit.io/static/img/icons/s01d.png', // Nieve ligera
+        // Agrega más mapeos según los códigos de Open-Meteo
+    };
+    return iconMap[weatherCode] || 'https://www.weatherbit.io/static/img/icons/c01d.png'; // Icono por defecto
+}
+
+// Función para mapear códigos de clima a descripciones
+function getWeatherDescription(weatherCode) {
+    const descriptionMap = {
+        0: 'Clear',
+        1: 'Partly Cloudy',
+        2: 'Cloudy',
+        3: 'Light Rain',
+        4: 'Rain',
+        5: 'Light Snow',
+        // Add more mappings according to Open-Meteo codes
+    };
+    return descriptionMap[weatherCode] || 'Unknown';
 }
 
 async function getCityName(lat,lon) {
@@ -174,7 +203,7 @@ function cityUpdate(newCity) {
 
 //--------------------------GET 24 HOUR FORECAST---------------------------------------------------------------
 
-/*async function getHourlyForecast(lat, lon) {
+async function getHourlyForecastOption1(lat, lon) {
     const hourlyWeatherUrl = `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${apiKey1}&units=${unitSelect.value}`;
     const response = await fetch(hourlyWeatherUrl);
     if (!response.ok) throw new Error('Error with hourly forecast');
@@ -184,136 +213,216 @@ function cityUpdate(newCity) {
     const temperatures = [];
     const weatherIconsByHour = {};
 
+
     data.list.slice(0, 8).forEach(entry => {
         const date = new Date(entry.dt * 1000);
         const hourString = date.getHours() + ':00'; 
         hours.push(hourString); 
         temperatures.push(entry.main.temp); 
+        temperatures.push(entry.main.temp);
+        temperatures.push(entry.main.temp);
         weatherIconsByHour[hourString] = entry.weather[0].icon || '❓';
     });
 
-    renderHourlyChart(hours, temperatures, weatherIconsByHour); 
-}*/
+    return temperatures;
+}
 
 async function getHourlyForecastOption2(lat, lon) {
-    const hourlyWeatherUrl = `https://api.weatherapi.com/v1/forecast.json?key=${apiKey2}&q=${lat},${lon}&hours=24`; 
+    const hourlyWeatherUrl = `https://api.weatherapi.com/v1/forecast.json?key=${apiKey2}&q=${lat},${lon}&hours=24&days=2`; 
     const response = await fetch(hourlyWeatherUrl);
     if (!response.ok) throw new Error('Error with hourly forecast');
     const data = await response.json();
-    
+
     const hours = [];
     const temperatures = [];
     const weatherIconsByHour = {};
+    const currentTime = new Date(); 
+    const forecastDays = data.forecast.forecastday;
+    for (const day of forecastDays) {
+        for (const entry of day.hour) {
+            const date = new Date(entry.time);
+            if (date >= currentTime && hours.length < 24) {
+                const hourString = date.getHours() + ':00'; 
+                hours.push(hourString);
+                if (unitSelect.value === 'metric') {
+                    temperatures.push(entry.temp_c.toFixed(2)); 
+                } else if (unitSelect.value === 'imperial') {
+                    temperatures.push(entry.temp_f.toFixed(2));
+                } else {
+                    temperatures.push((entry.temp_c + 273.15).toFixed(2));
+                }
+                weatherIconsByHour[hourString] = entry.condition.icon || '❓'; 
+            }
+            if (hours.length >= 24) {
+                break;
+            }
+        }
 
-    // Obtenemos las 24 horas del primer día de pronóstico
-    data.forecast.forecastday[0].hour.forEach(entry => {
-        const date = new Date(entry.time);
-        const hourString = date.getHours() + ':00';  // Formato "00:00" para cada hora
-        hours.push(hourString);
-        console.log(unitSelect.value);
-        if(unitSelect.value==='metric'){
-            temperatures.push(entry.temp_c).toFixed;
+        if (hours.length >= 24) {
+            break;
         }
-        else if(unitSelect.value==='imperial'){
-            temperatures.push(entry.temp_f).toFixed;
-        }
-        else{
-            temperatures.push(entry.temp_c+273.15).toFixed;
-        }
-        weatherIconsByHour[hourString] = entry.condition.icon || '❓'; 
-        
-    });
+    }
 
-    renderHourlyChart(hours, temperatures, weatherIconsByHour);
+    return { temperatures2: temperatures, icons: weatherIconsByHour, hours };
 }
 
+async function getHourlyForecastOption3(lat, lon) {
+    const hourlyWeatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=temperature_2m&timezone=auto`;
+    const response = await fetch(hourlyWeatherUrl);
+    const data = await response.json();
 
+    const temperatures = [];
+    const hourlyTemperatures = data.hourly.temperature_2m.slice(0, 24);
+    hourlyTemperatures.forEach(temp => {
+        temperatures.push(temp.toFixed(2)); // Asegúrate de usar toFixed para tener dos decimales
+    });
+    return temperatures;
+}
 
-function renderHourlyChart(hours, temperatures, icons) {
-
-    let datasets=[];
+async function getHourlyChart(lat,lon) {
+    let temperatures1=await getHourlyForecastOption1(lat,lon);
+    let {temperatures2,icons,hours}=await getHourlyForecastOption2(lat,lon);
+    let temperatures3=await getHourlyForecastOption3(lat,lon);
     let chartData = {
         labels: hours,
-        datasets: [
+        datasets:[
             {
-                name: "Temperature",
+                name: "OPTION 1",
                 type: 'line',
-                values: temperatures
+                values: temperatures1
+            },
+            {
+                name: "OPTION 2",
+                type: 'line',
+                values: temperatures2
+            },
+            {
+                name: "OPTION 3",
+                type: 'line',
+                values: temperatures3
             }
         ]
     };
-    renderChart('charthours',chartData,icons);
+    renderChart("Next 24 hours",'charthours',chartData,icons);
 }
 //--------------------------GET 7 DAYS FORECAST---------------------------------------------------------------
 
-//--------------------------GET 5 DAYS FORECAST---------------------------------------------------------------
-
-async function getDailyForecast(lat, lon) {
+async function getDailyForecastOption1(lat, lon) {
     const dailyWeatherUrl = `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${apiKey1}&units=${unitSelect.value}`;
     const response = await fetch(dailyWeatherUrl);
     if (!response.ok) throw new Error('Error with daily forecast');
     const data = await response.json();
-    const dailyTemperatures = {};
-    const weatherIcons = {}; 
 
+    const dailyTemperatures = [];
+
+    // Agrupamos temperaturas por día
+    const dailyData = {};
     data.list.forEach(entry => {
-        const date = new Date(entry.dt * 1000);
-        const dateString = date.toLocaleDateString('en-GB');
-
-        if (!dailyTemperatures[dateString]) {
-            dailyTemperatures[dateString] = [];
-            weatherIcons[dateString] = entry.weather[0].icon; 
+        const date = new Date(entry.dt * 1000).toISOString().split('T')[0]; // Obtenemos solo la fecha
+        if (!dailyData[date]) {
+            dailyData[date] = { sum: 0, count: 0 };
         }
-        
-        dailyTemperatures[dateString].push(entry.main.temp);
+        dailyData[date].sum += entry.main.temp;
+        dailyData[date].count += 1;
     });
 
-    const days = [];
-    const temperatures = [];
-    const iconsByDate = {}; 
-    const dateKeys = Object.keys(dailyTemperatures).slice(1, 6); 
+    // Calculamos la temperatura media para cada día
+    for (const date in dailyData) {
+        const averageTemp = (dailyData[date].sum / dailyData[date].count).toFixed(2);
+        dailyTemperatures.push( averageTemp);
+    }
 
-    dateKeys.forEach(dateKey => {
-        const avgTemp = dailyTemperatures[dateKey].reduce((sum, temp) => sum + temp, 0) / dailyTemperatures[dateKey].length;
-        days.push(dateKey); 
-        temperatures.push(avgTemp.toFixed(2));
-
-        iconsByDate[dateKey] = weatherIcons[dateKey];
-    });
-
-    renderDailyChart(days, temperatures, iconsByDate); 
+    return dailyTemperatures; // Retornamos las temperaturas medias
 }
 
-function renderDailyChart(days, temperatures, icons) {
-    let chartData = {
-        labels: days,
-        datasets: [
+async function getDailyForecastOption2(lat, lon) {
+    const dailyWeatherUrl = `https://api.weatherapi.com/v1/forecast.json?key=${apiKey2}&q=${lat},${lon}&days=7`; 
+    const response = await fetch(dailyWeatherUrl);
+    if (!response.ok) throw new Error('Error with daily forecast');
+    const data = await response.json();
+
+    const dailyTemperatures = [];
+    const weatherIcons= [];
+    const days=[];
+    const forecastDays = data.forecast.forecastday;
+
+    forecastDays.forEach(day => {
+        const averageTemp = day.day.avgtemp_c.toFixed(2); // Temperatura media en Celsius
+        dailyTemperatures.push(averageTemp);
+        weatherIcons.push(day.day.condition.icon);
+        days.push(day.date);
+    });
+
+    return {dailyTemperatures2:dailyTemperatures,weatherIcons,days};
+}
+
+async function getDailyForecastOption3(lat, lon) {
+    const dailyWeatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=temperature_2m_max,temperature_2m_min&timezone=auto`;
+    const response = await fetch(dailyWeatherUrl);
+    if (!response.ok) throw new Error('Error with daily forecast');
+    const data = await response.json();
+
+    const dailyTemperatures = [];
+    const dailyData = data.daily;
+
+    dailyData.temperature_2m_max.forEach((maxTemp, index) => {
+        const minTemp = dailyData.temperature_2m_min[index];
+        const averageTemp = ((maxTemp + minTemp) / 2).toFixed(2); // Calculamos la media
+        dailyTemperatures.push(averageTemp);
+    });
+
+    return dailyTemperatures;
+}
+
+async function getDailyChart(lat, lon) {
+    const dailyTemperatures1 = await getDailyForecastOption1(lat, lon);
+    const {dailyTemperatures2,weatherIcons,days} = await getDailyForecastOption2(lat, lon);
+    const dailyTemperatures3 = await getDailyForecastOption3(lat, lon);
+    console.log(dailyTemperatures2);
+    let chartData={
+        labels:days,
+        datasets:[
             {
-                name: "Temperature",
+                name: "OPTION 1",
                 type: 'line',
-                values: temperatures
+                values: dailyTemperatures1
+            },
+            {
+                name: "OPTION 2",
+                type: 'line',
+                values: dailyTemperatures2
+            },
+            {
+                name: "OPTION 3",
+                type: 'line',
+                values: dailyTemperatures3
             }
         ]
-    };
+    }
 
-    let chart = new frappe.Chart('#chartdays', {
-        title: "Next 5 Days",
+    renderChart("Average temperature next 7 days",'chartdays', chartData,weatherIcons);
+}
+//--------------------------RENDER CHART---------------------------------------------------------------
+
+function renderChart(name,chartID, chartData, icons) {
+    let chart = new frappe.Chart(`#${chartID}`, {
+        title: name,
         data: chartData,
-        type: 'line', 
-        colors: ['#eb5146'],
+        type: 'axis-mixed', 
+        colors: ['#FF0000', '#00FF00', '#0000FF'],
         height: 200,
         tooltipOptions: {
             formatTooltipY: (d) => { 
                 return `${d} ${unitSymbol}`; 
             },
             formatTooltipX: (d) => { 
-                return `<img src="http://openweathermap.org/img/wn/${icons[d]}@2x.png" alt="weather icon" style="width: 20px; height: 20px;">`; 
+                return `<img src="https:${icons[d]}" alt="weather icon" style="width: 30px; height: 30px;">`;
             }
         }
     });
 }
-
 //--------------------------CHANGE STYLESHEET---------------------------------------------------------------
+
 
 function updateAppStyle(temperature, sunrise, sunset) {
     const currentHour = new Date().getHours();
@@ -389,37 +498,27 @@ function saveFavourites() {
     localStorage.setItem('favourites', JSON.stringify(favouriteCities));
 }
 
+//--------------------------LOAD CHART---------------------------------------------------------------
 
 async function loadPage(){
+    const { lat, lon } =await getCoordinates(actualCity);
+    getWeather(actualCity);
+    getHourlyChart(lat,lon);
+    getDailyChart(lat,lon); 
+}
+
+//--------------------------INITIALIZE CHART---------------------------------------------------------------
+async function initialize(){
     favouriteCities=  JSON.parse(localStorage.getItem('favourites')) || [];
     actualCity=  JSON.parse(localStorage.getItem('city')) || getCityName(getLocation()) || 'vallecas';
     //here I am using a default city to be seen when you first open the app. I choose my home City :)
     const { lat, lon } =await getCoordinates(actualCity);
     getWeather(actualCity);
-    getHourlyForecastOption2(lat,lon); 
-    getDailyForecast(lat,lon);
+    getHourlyChart(lat,lon);
+    getDailyChart(lat,lon); 
 }
 
 
-function renderChart(chartID, chartData, icons) {
-    let chart = new frappe.Chart(`#${chartID}`, {
-        title: "Next 24h",
-        data: chartData,
-        type: 'line', 
-        colors: ['#eb5146'],
-        height: 200,
-        tooltipOptions: {
-            formatTooltipY: (d) => { 
-                return `${d} ${unitSymbol}`; 
-            },
-            formatTooltipX: (d) => { 
-                return `<img src="https:${icons[d]}" alt="weather icon" style="width: 30px; height: 30px;">`; 
-            }
-        }
-    });
-}
+initialize();
 
 
-loadPage();
-
-//here I am using a default city to be seen when you first open the app. I choose my home City :)
