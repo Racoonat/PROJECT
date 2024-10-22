@@ -38,20 +38,19 @@ async function displayFavorites() {
     if (favourites.length === 0) {
         const row = document.createElement('tr');
         const cell = document.createElement('td');
-        cell.colSpan = 3; // Ajusta el número de columnas
-        cell.textContent = 'No hay ubicaciones favoritas.';
+        cell.colSpan = 3; 
+        cell.textContent = 'Not favourites Cities yet :(';
         row.appendChild(cell);
         tableBody.appendChild(row);
         return;
     }
 
-    // Agrega cada favorito a la tabla
+
     for (const favorite of favourites) {
         
-        const weatherData = await getWeather(favorite); // Llama a la función para obtener el clima
-
+        const weatherData = await getWeather(favorite); 
         const row = document.createElement('tr');
-        // Agrega evento de clic a la fila
+ 
         row.addEventListener('click', () => {
             localStorage.setItem('city', JSON.stringify(favorite));
             window.location.href = 'index.html'; 
@@ -62,7 +61,7 @@ async function displayFavorites() {
         row.appendChild(cityCell);
 
         const temperatureCell = document.createElement('td');
-        temperatureCell.textContent = `${weatherData.temperature}°`; // Añade el símbolo de grados si lo deseas
+        temperatureCell.textContent = `${weatherData.temperature}°`; 
         row.appendChild(temperatureCell);
 
         const iconCell = document.createElement('td');
